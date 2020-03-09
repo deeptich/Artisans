@@ -1,8 +1,9 @@
+import axios from 'axios';
 import React, { Fragment, useState } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux'; 
-import { createProfile } from '../../actions/profile'; 
+import { connect } from 'react-redux';
+import { createProfile } from '../../actions/profile';
 
 
 const CreateProfile = ({ createProfile, history }) => {
@@ -18,11 +19,11 @@ const CreateProfile = ({ createProfile, history }) => {
     facebook: '',
     youtube: '',
     linkedin: '',
-	instagram: '',
-	file: ''
+		instagram: '',
+		fileUpload: ''
     });
 
-    const [displaySocialInputs, toggleSocialInputs] = useState(false); 
+    const [displaySocialInputs, toggleSocialInputs] = useState(false);
     const {
         company,
         location,
@@ -35,22 +36,40 @@ const CreateProfile = ({ createProfile, history }) => {
         facebook,
         youtube,
         linkedin,
-		instagram,
-		file
+				instagram,
+				fileUpload
     } = formData;
 
-	
-	const fileSelectedHandler = event => {
-		setFormData({ ...formData, [event.target.name]: event.target.value });
-				  
-	};	
+
+	const fileSelectedHandler = async (event) => {
+		const config = {
+			headers: {
+				'content-type': 'multipart/form-data'
+			}
+		};
+
+		const file = event.target.files[0];
+		console.log('file', file);
+		const data = new FormData();
+		data.append('fileUpload', file)
+
+		console.log(data);
+		const res = await axios.post('/api/upload/upload', data, config);
+
+		console.log('resi', res);
+
+		setFormData({
+			...formData,
+			fileUpload: res.data,
+		});
+	};
     const onChange = e =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
-	
+
     const onSubmit = e => {
         e.preventDefault();
         createProfile(formData,history);
-    }    
+    }
     return (
         <Fragment>
 			<h1 className='large text-primary'>Create Your Profile</h1>
@@ -61,7 +80,7 @@ const CreateProfile = ({ createProfile, history }) => {
 			<small>* = required field</small>
 			<form className='form' onSubmit={ e => onSubmit(e)}>
 				<div className='form-group'>
-                    <select name='productcat' value={productcat} 
+                    <select name='productcat' value={productcat}
                     onChange={e => onChange(e)}
                     >
 						<option value='0'>* Select your Craft Categeory</option>
@@ -75,7 +94,7 @@ const CreateProfile = ({ createProfile, history }) => {
 						<option value='Tharu Tribal Craft'>Tharu Tribal Craft</option>
 					</select>
 					<small className='form-text'>
-						Give us an idea of your main occupation 
+						Give us an idea of your main occupation
 					</small>
 				</div>
 				<div className='form-group'>
@@ -90,7 +109,7 @@ const CreateProfile = ({ createProfile, history }) => {
 						Could be your own company or one you work for
 					</small>
 				</div>
-				
+
 				<div className='form-group'>
 					<input
 						type='text'
@@ -145,15 +164,14 @@ const CreateProfile = ({ createProfile, history }) => {
 				<div className='form-group'>
 					<input
 						type='file'
-						name='file'
+						name='fileUpload'
 						placeholder="File Upload"
-						value={file}
 						encType='multipart/form-data'
 						onChange={event => fileSelectedHandler(event)}
 					/>
 				</div>
                 <div className='my-2'>
-				
+
 					<button
 						onClick={() => toggleSocialInputs(!displaySocialInputs)}
 						type='button'
@@ -219,16 +237,16 @@ const CreateProfile = ({ createProfile, history }) => {
 								onChange={e => onChange(e)}
 							/>
 						</div>
-                 </Fragment>       
+                 </Fragment>
                 )}
             <input type='submit' className='btn btn-primary my-1' />
 				<Link className='btn btn-light my-1' to='/dashboard'>
                 Go Back
                     </Link>
 			</form>
-        </Fragment>  
+        </Fragment>
     )};
-                      
+
 
 CreateProfile.propTypes = {
     createProfile : PropTypes.func.isRequired
